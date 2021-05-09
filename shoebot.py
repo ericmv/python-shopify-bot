@@ -3,33 +3,55 @@ import json
 # from selenium import webdriver
 from bs4 import BeautifulSoup as soup
 import time
+from harvester import Harvester
+from threading import Thread
+import logging
+
+try:
+    import http.client as http_client
+except ImportError:
+    # Python 2
+    import httplib as http_client
+http_client.HTTPConnection.debuglevel = 1
+
+
+# You must initialize logging, otherwise you'll not see debug output.
+logging.basicConfig()
+logging.getLogger().setLevel(logging.DEBUG)
+requests_log = logging.getLogger("requests.packages.urllib3")
+requests_log.setLevel(logging.DEBUG)
+requests_log.propagate = True
+
+
 #
 # from fake_useragent import UserAgent
 # ua = UserAgent()
+harvester = Harvester()
 
-import webbrowser
-chrome_path = 'open -a /Applications/Google\ Chrome.app %s'
 
-base_url = 'https://ericvu.myshopify.com'
+domain = "ericvu.myshopify.com"
+base_url = 'https://' + domain
 products_url = base_url + 'products.json'
 keywords = ['992']
 size = "6"
-# r = requests.get('https://www.jjjjound.com/pages/closed2')
-# print(r)
 
-recaptcha_token = "03AGdBq262AhsDOUHizCJgNaqlVHUHINC7qqH-So8QP5fHTADfi9dPF-nr75pDjXAsWu-P5GvHim_aMwND7JsZGra1Ck-v93k8FKTsZVgp7tE75gxYXwfRGyNsVK7GrsT2tWZfQUIVWvi893iA9AtBV-p3JyrgNpOlm23DaggKd-_p3okne4cezyXCmBxrh-_OwdSKJVhbjxSV8PgpanhbyTdqsdVuGlqqG4PvClQFuhnGa2OnjAAaZcxOUJVm2h0nle8HMNbwLZp5kWLhKSm4UrQoHxfXobVGUW_mtM2zBzmvBdS1ZWUo9zh-FPUQ5-gARkd98aV5wH6IIZ6IWH3Ho0ThPyBGZAR8Rqa7kCOmr2BvBILMboDRXMGezicEMl4c2iwUPcAoifN-umSi1nMhVMqg1IawL_FQk17gNRNsHjNwsjlnPjoOTkNcqLsC4rIPgQw0a1eb-9h9rHLwPUio4spi47ZA0hQpAkgrLmIXHF7zIpEw2f463m52iSXjBOp9Kab-XDtmyzgGPTq2ThbCiYa9sS8RTj3jDX1i3ZXdDMM-Z4fEw9VKDk4vSvs-CRVb0h5-gRNX22bumsV0Fp8SGoN-KiHMIJbNlFxirJa5Hp5X6bYkq-Jlaxc1bHhWxAAzxaRv1M0-7xswRMk7Vi43LOo02HiSmNHkZiZa9Uoyf2rvK2E1YdXuNcU5Pc6xQeVjgJ1c-tF4DaW8fKp_H3CItSGKD0nvXNpKH8y8CNUU8xpHpT22kEUjbCW4ESF86Ek2nPApOWAWyIRUBGgpO6xKpzveUFNIev-t0D4k5SilyaVSWc2olmolTArYkn8MCkb18FMzfWmVXqKPOgCL1iDghLXwMlO5ccpE9cMc5RSWJprW6v26RH193dw3CclzLOjqCmFuEKl7FA7tAYIyK1Fe-yIQ82BWJSMDxHDoPEu2qrWuU9-UIjtpTFv-DaY1sHJ_U1sf5Sgdvqo2gau9h9CGn0lJ2xJT3BB-QUdN9Nh9w3KY9OuUZEUEy3d-nH3w-GcYrxbe7-kpXpYOd8PkMxD1IlLm3Tnpvk0922G-duqGe5bpYYqHsjN_InbAG3fTfJnThEK6xWdygxR6lqxsXN97HAHu1Dnzoh0JUDhh7WycjbZsuZ7jGom-dTYFa3Mji4nx7m1i1X65HGU_8zGYSSAnDGyXgdPqKDhWIVwq_rPi-A_X0IsXUztWwzgHXhMcrGTYayyG-LvlnpGTBUSUhALpxqAnqYnoxOqr34nTEVJwbDmfRVYudt5jN77MJyj31ZdnYAteXUxH7LyJ_iXar8QPGLm8J_tSIJly7eKYnN8mOLJkdTucHEFsMNwCpAhqfCI_rjDLe0kCaPI_oeR2BQ7W0HpTfuNeabr5GFLk2tHvHHdYBkxveCyWCceMO9H9pJIirHRasUEZ8YZS92AY-kwXRlWi-6qMAkR0_PdgrzfmNXLlu9IvT4gkHfTGxB5aJAmc-4snD1o8mt0l77HZXJkaOkpDOAwdDpMN-qxnwple0z5WTJx0obTXZIitbnCjM4AjHTsMMhP-NE9s4SGwVJgpVcFp9z2RwQy7NBkjAD2t__0Xw-DAYSVy5oeNXhgKfVYnBeUCUmCxMLRPAQJdB6KYPl7GnTqXg_ogOaTa6svJCK6r1ZJ4nZe_jx8tOHU-9mk0iKO5xZCsQPc3Zjuh7RMUH9YLG4kHyxoA0Y_tyUseDZ2SJxpzz-gIkv08lDDEEh1AriCHc6Iqj75dH9vto3fVDAS_nTrhjQGszw"
+# headers
+headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"}
 
-profile = {
-    "email": "ericvooo@gmail.com",
-    "first": "Eric",
-    "last": "Vu",
-    "address": "518 Pierpont Dr.",
-    "city": "Costa Mesa",
-    "state": "California",
-    "zip": "92626",
-    "phone": "7142712256"
-}
+# recaptcha token intercepter
+sitekey = '6LeoeSkTAAAAAA9rkZs5oS82l69OEYjKRZAiKdaF'
+tokens = harvester.intercept_recaptcha_v2(domain, sitekey)
 
+# recaptcha server
+server_thread = Thread(target=harvester.serve, daemon=True)
+server_thread.start()
+
+# launch a browser instance where we can solve the captchas
+harvester.launch_browser()
+
+# load profile
+with open('profile.json') as f:
+    profile = json.load(f)
 
 def preload_payment(session):
         # link = "https://elb.deposit.shopifycs.com/sessions"
@@ -126,7 +148,7 @@ def fill_customer_info(session, checkout_url, profile, recaptcha_token=None):
     }
     if recaptcha_token:
         payload["g-recaptcha-response"] = recaptcha_token
-    return session.post(checkout_url, data=payload, allow_redirects=True)
+    return session.post(checkout_url, data=payload, allow_redirects=True, headers=headers)
 
 def choose_shipping_method(session, site, checkout_url):
     link = site + "//cart/shipping_rates.json?shipping_address[zip]={}&shipping_address[country]={}&shipping_address[province]={}".format("92626","United States","California")
@@ -209,12 +231,18 @@ def run():
         time.sleep(1)
         r = s.get(site_checkout, verify=False)
 
-    print("item still in stock!")
     checkout_url = r.url
     print("checkout landing url %s", r.url)
 
     # input('submit info?')
+    print('waiting on token...')
+    recaptcha_token = tokens.get()
+
+    print('token available!')
+    # print(recaptcha_token)
+
     info_response = fill_customer_info(s, checkout_url, profile, recaptcha_token)
+    # print('request raw', info_response.request)
     print('info_response', info_response.url)
     return
     check_for_stock(s, checkout_url, info_response)
@@ -255,5 +283,5 @@ def run():
     # print(payment_response.status_code)
     # print(payment_response.history)
 
-
+input('start checkout?')
 run()
